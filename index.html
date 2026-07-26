@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Galaxy Sim</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="index.css?v=3">
+
+    <script type="text/javascript" src="libs/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="libs/lodash.min.js"></script>
+    <script type="text/javascript" src="libs/three.min.js"></script>
+    <script type="text/javascript" src="libs/OrbitControls.js"></script>    
+
+    <script type="text/javascript" src="init.js?v=3"></script>
+    <script type="text/javascript" src="gravity.js?v=3"></script>
+    <script type="text/javascript" src="materials.js?v=3"></script>
+    <script type="text/javascript" src="app.js?v=3"></script>
+</head>
+<body>
+    <!-- Fullscreen Loading Overlay -->
+    <div id="loading_cover">
+        <div id="loading_content">
+            <div class="quote_text">Never apologize for burning too brightly or collapsing into yourself. That is how galaxies are made.</div>
+            <div id="loading_indicator">
+                <div class="loading_bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating HUD Controls -->
+    <div class="hud-sidebar glass-panel" id="hud_panel">
+        <div class="hud-header">
+            <h1>GALAXY SIM</h1>
+            <div class="hud-header-right">
+                <div class="status-indicator">
+                    <div class="status-dot" id="status_dot"></div>
+                    <span id="status_text">ACTIVE</span>
+                </div>
+                <button class="hud-close-btn" id="btn_hud_close">&times;</button>
+            </div>
+        </div>
+
+        <!-- Gravitational Constant -->
+        <div class="control-group">
+            <div class="control-label">
+                <span>Gravity Strength</span>
+                <span class="control-val" id="val_gravity">1.0</span>
+            </div>
+            <input type="range" id="slide_gravity" min="0.1" max="10" step="0.1" value="1.0">
+        </div>
+
+        <!-- Material Visibilities -->
+        <div class="control-group">
+            <div class="control-label">
+                <span>Large Stars Opacity</span>
+                <span class="control-val" id="val_large_stars">0.0</span>
+            </div>
+            <input type="range" id="slide_large_stars" min="0" max="1" step="0.1" value="0.0">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Small Stars Opacity</span>
+                <span class="control-val" id="val_small_stars">0.0</span>
+            </div>
+            <input type="range" id="slide_small_stars" min="0" max="1" step="0.1" value="0.0">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Gas Opacity</span>
+                <span class="control-val" id="val_gas">0.18</span>
+            </div>
+            <input type="range" id="slide_gas" min="0" max="1" step="0.02" value="0.18">
+        </div>
+
+        <!-- Background Selection -->
+        <div class="control-group">
+            <div class="control-label">
+                <span>Background Skybox</span>
+            </div>
+            <div class="bg-selector">
+                <button class="bg-btn active" data-index="0">Milky Way</button>
+                <button class="bg-btn" data-index="1">Nebula</button>
+                <button class="bg-btn" data-index="2">Deep Blue</button>
+                <button class="bg-btn" data-index="3">Red Nebula</button>
+                <button class="bg-btn" data-index="4">Deep Space</button>
+                <button class="bg-btn" data-index="5">Starry Sky</button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn" id="btn_play_pause">Pause</button>
+            <button class="btn active" id="btn_autorotate">Auto-Rotate</button>
+            <button class="btn active" id="btn_cam_mode">Camera: Free</button>
+            <button class="btn" id="btn_shortcuts">Keyboard Shortcuts</button>
+            <button class="btn btn-full" id="btn_reset">Reset Simulation</button>
+        </div>
+    </div>
+
+    <!-- Floating HUD Toggle Button -->
+    <button class="hud-toggle-btn glass-panel" id="btn_hud_toggle">⚙️</button>
+
+    <!-- Music Player Bottom-Left -->
+    <div class="music-player glass-panel" id="music_panel">
+        <div class="wave-icon" id="wave_icon">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        <div class="music-info">
+            <div class="music-title">Mysterious Space Theme (Showcase)</div>
+            <div class="music-artist">Background Theme</div>
+        </div>
+        <div class="music-controls">
+            <button class="music-btn" id="btn_music_play">▶</button>
+            <button class="music-btn" id="btn_music_mute">🔊</button>
+            <input type="range" class="volume-slider" id="slide_music_vol" min="0" max="1" step="0.05" value="0.5">
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal Overlay -->
+    <div class="modal-overlay" id="shortcuts_modal">
+        <div class="modal-content glass-panel">
+            <h2>Keyboard Shortcuts</h2>
+            <div class="shortcut-list">
+                <div class="shortcut-item">
+                    <span>Play / Pause</span>
+                    <span class="key-badge">SPACE</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Toggle Auto-Rotation</span>
+                    <span class="key-badge">R</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Change Pixel Density</span>
+                    <span class="key-badge">L</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Toggle Audio Playback</span>
+                    <span class="key-badge">A</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Orbit Camera Mode</span>
+                    <span class="key-badge">1</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Guided Camera Mode</span>
+                    <span class="key-badge">2</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Hide/Show HUD Panel</span>
+                    <span class="key-badge">H</span>
+                </div>
+            </div>
+            <button class="btn btn-full" id="btn_close_modal" style="margin-top: 10px;">Close</button>
+        </div>
+    </div>
+</body>
+</html>
